@@ -41,6 +41,8 @@ else ifeq ($(TARGET_BOARD_PLATFORM),msm7k)
     MM_CORE_TARGET = 7627
 else ifeq ($(TARGET_BOARD_PLATFORM),msm7625)
     MM_CORE_TARGET = 7625
+else ifeq ($(TARGET_BOARD_PLATFORM),msm8660)
+    MM_CORE_TARGET = 7630
 else
     $(error Unsupported target platform $(TARGET_BOARD_PLATFORM))
 endif
