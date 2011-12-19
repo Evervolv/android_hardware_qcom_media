@@ -1,5 +1,9 @@
 AUDIO_HW_ROOT := $(call my-dir)
 
+ifeq ($(TARGET_BOARD_PLATFORM),msm7k)
+    include $(AUDIO_HW_ROOT)/msm72xx/Android.mk
+endif
+
 ifeq ($(TARGET_BOARD_PLATFORM),msm8x60)
     include $(AUDIO_HW_ROOT)/msm8x60/Android.mk
 endif
