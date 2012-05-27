@@ -1,7 +1,6 @@
 /*
- * Copyright (c) 2009, The Android Open-Source Project
- * Copyright (c) 2009-2010, Code Aurora Forum. All rights reserved.
- * Copyright (c) 2011, The CyanogenMod Project
+ * Copyright (C) 2009 The Android Open Source Project
+ * Copyright (c) 2009, 2011, Code Aurora Forum. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +21,6 @@
 #include <utils/Errors.h>
 #include <utils/KeyedVector.h>
 #include <hardware_legacy/AudioPolicyManagerBase.h>
-
-using namespace android;
 
 namespace android_audio_legacy {
 
@@ -59,7 +56,6 @@ public:
         //  where conditions are changing (setDeviceConnectionState(), setPhoneState()...) AND
         //  before updateDeviceForStrategy() is called.
         virtual uint32_t getDeviceForStrategy(routing_strategy strategy, bool fromCache = true);
-
 #ifdef WITH_QCOM_LPA
         virtual audio_io_handle_t getSession(AudioSystem::stream_type stream,
                                             uint32_t format,
@@ -76,6 +72,7 @@ public:
                                     AudioSystem::stream_type stream,
                                     int session = 0);
         virtual void setForceUse(AudioSystem::force_use usage, AudioSystem::forced_config config);
+        status_t startInput(audio_io_handle_t input);
 
 protected:
         // true is current platform implements a back microphone
@@ -95,7 +92,6 @@ protected:
 #ifdef WITH_QCOM_LPA
         audio_io_handle_t mLPADecodeOutput;           // active output handler
         audio_io_handle_t mLPAActiveOuput;           // LPA Output Handler during inactive state
-
         bool    mLPAMuted;
         AudioSystem::stream_type  mLPAStreamType;
         AudioSystem::stream_type  mLPAActiveStreamType;
