@@ -23,21 +23,6 @@
 
 namespace android {
 
-static const char kPrefix[] = "7x30.";
-
-static void AddPrefix(char *name) {
-    CHECK(!strncmp("OMX.qcom.", name, 9));
-    String8 tmp(name, 9);
-    tmp.append(kPrefix);
-    tmp.append(&name[9]);
-    strcpy(name, tmp.string());
-}
-
-static void RemovePrefix(const char *name, String8 *out) {
-    out->setTo(name, 9);  // "OMX.qcom."
-    out->append(&name[9 + strlen(kPrefix)]);
-}
-
 OMXPluginBase *createOMXPlugin() {
     return new QComOMXPlugin;
 }
@@ -86,10 +71,6 @@ OMX_ERRORTYPE QComOMXPlugin::makeComponentInstance(
         return OMX_ErrorUndefined;
     }
 
-    String8 tmp;
-    RemovePrefix(name, &tmp);
-    name = tmp.string();
-
     return (*mGetHandle)(
             reinterpret_cast<OMX_HANDLETYPE *>(component),
             const_cast<char *>(name),
@@ -113,15 +94,7 @@ OMX_ERRORTYPE QComOMXPlugin::enumerateComponents(
         return OMX_ErrorUndefined;
     }
 
-    OMX_ERRORTYPE res = (*mComponentNameEnum)(name, size, index);
-
-    if (res != OMX_ErrorNone) {
-        return res;
-    }
-
-    AddPrefix(name);
-
-    return OMX_ErrorNone;
+    return (*mComponentNameEnum)(name, size, index);
 }
 
 OMX_ERRORTYPE QComOMXPlugin::getRolesOfComponent(
@@ -132,10 +105,6 @@ OMX_ERRORTYPE QComOMXPlugin::getRolesOfComponent(
     if (mLibHandle == NULL) {
         return OMX_ErrorUndefined;
     }
-
-    String8 tmp;
-    RemovePrefix(name, &tmp);
-    name = tmp.string();
 
     OMX_U32 numRoles;
     OMX_ERRORTYPE err = (*mGetRolesOfComponentHandle)(
