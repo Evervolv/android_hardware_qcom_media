@@ -2881,8 +2881,12 @@ OMX_ERRORTYPE  omx_vdec::get_parameter(OMX_IN OMX_HANDLETYPE     hComp,
                         nativeBuffersUsage->nUsage = (GRALLOC_USAGE_PRIVATE_MM_HEAP | GRALLOC_USAGE_PROTECTED |
                                                       GRALLOC_USAGE_PRIVATE_CP_BUFFER | GRALLOC_USAGE_PRIVATE_UNCACHED);
                 } else {
+#ifdef IOMMU_HEAP_ONLY
+                        nativeBuffersUsage->nUsage = (GRALLOC_USAGE_PRIVATE_IOMMU_HEAP);
+#else
                         nativeBuffersUsage->nUsage = (GRALLOC_USAGE_PRIVATE_MM_HEAP |
                                                          GRALLOC_USAGE_PRIVATE_IOMMU_HEAP);
+#endif
                 }
 #else
 #if defined (MAX_RES_720P) ||  defined (MAX_RES_1080P_EBI)
@@ -7523,7 +7527,11 @@ int omx_vdec::alloc_map_ion_memory(OMX_U32 buffer_size,
   if(secure_mode) {
     alloc_data->flags = (ION_HEAP(MEM_HEAP_ID) | ION_SECURE);
   } else {
+#ifdef IOMMU_HEAP_ONLY
+    alloc_data->flags = (ION_HEAP(ION_IOMMU_HEAP_ID));
+#else
     alloc_data->flags = (ION_HEAP(MEM_HEAP_ID) | ION_HEAP(ION_IOMMU_HEAP_ID));
+#endif
   }
   rc = ioctl(fd,ION_IOC_ALLOC,alloc_data);
   if (rc || !alloc_data->handle) {
