@@ -113,7 +113,7 @@ mm-vdec-test-inc    := hardware/qcom/media/mm-core/inc
 mm-vdec-test-inc    += $(LOCAL_PATH)/inc
 
 LOCAL_MODULE                    := mm-vdec-omx-test
-LOCAL_MODULE_TAGS               := debug
+LOCAL_MODULE_TAGS               := optional
 LOCAL_CFLAGS                    := $(libOmxVdec-def)
 LOCAL_C_INCLUDES                := $(mm-vdec-test-inc)
 
@@ -134,7 +134,7 @@ mm-vdec-drv-test-inc    := hardware/qcom/media/mm-core/inc
 mm-vdec-drv-test-inc    += $(LOCAL_PATH)/inc
 
 LOCAL_MODULE                    := mm-video-driver-test
-LOCAL_MODULE_TAGS               := debug
+LOCAL_MODULE_TAGS               := optional
 LOCAL_CFLAGS                    := $(libOmxVdec-def)
 LOCAL_C_INCLUDES                := $(mm-vdec-drv-test-inc)
 LOCAL_PRELINK_MODULE            := false
