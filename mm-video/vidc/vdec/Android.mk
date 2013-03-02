@@ -37,7 +37,7 @@ libOmxVdec-def += -DMAX_RES_1080P_EBI
 libOmxVdec-def += -DPROCESS_EXTRADATA_IN_OUTPUT_PORT
 libOmxVdec-def += -D_COPPER_
 endif
-ifeq ($(TARGET_QCOM_DISPLAY_VARIANT),caf)
+ifeq ($(TARGET_BOOTLOADER_NAME),mako)
 libOmxVdec-def += -DIOMMU_HEAP_ONLY
 endif
 ifeq ($(TARGET_BOARD_PLATFORM),msm7x30)
