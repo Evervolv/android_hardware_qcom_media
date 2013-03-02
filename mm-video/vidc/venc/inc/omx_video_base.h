@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------
-Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
+Copyright (c) 2010-2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -8,7 +8,7 @@ modification, are permitted provided that the following conditions are met:
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * Neither the name of Code Aurora nor
+    * Neither the name of the Linux Foundation nor
       the names of its contributors may be used to endorse or promote
       products derived from this software without specific prior written
       permission.
@@ -74,21 +74,6 @@ public:
 
 #include <utils/Log.h>
 #define LOG_TAG "OMX-VENC-720p"
-#ifdef ENABLE_DEBUG_LOW
-#define DEBUG_PRINT_LOW ALOGV
-#else
-#define DEBUG_PRINT_LOW
-#endif
-#ifdef ENABLE_DEBUG_HIGH
-#define DEBUG_PRINT_HIGH  ALOGV
-#else
-#define DEBUG_PRINT_HIGH
-#endif
-#ifdef ENABLE_DEBUG_ERROR
-#define DEBUG_PRINT_ERROR ALOGE
-#else
-#define DEBUG_PRINT_ERROR
-#endif
 
 #else //_ANDROID_
 #define DEBUG_PRINT_LOW
@@ -98,7 +83,11 @@ public:
 
 #ifdef USE_ION
     static const char* MEM_DEVICE = "/dev/ion";
+    #ifdef MAX_RES_720P
+    #define MEM_HEAP_ID ION_CAMERA_HEAP_ID
+    #else
     #define MEM_HEAP_ID ION_CP_MM_HEAP_ID
+    #endif
 #elif MAX_RES_720P
 static const char* MEM_DEVICE = "/dev/pmem_adsp";
 #elif MAX_RES_1080P_EBI
@@ -130,18 +119,15 @@ static const char* MEM_DEVICE = "/dev/pmem_smipool";
 #define BITMASK_SIZE(mIndex) (((mIndex) + BITS_PER_BYTE - 1)/BITS_PER_BYTE)
 #define BITMASK_OFFSET(mIndex) ((mIndex)/BITS_PER_BYTE)
 #define BITMASK_FLAG(mIndex) (1 << ((mIndex) % BITS_PER_BYTE))
-#define BITMASK_CLEAR(mArray,mIndex) (mArray)[BITMASK_OFFSET(mIndex)] \
-        &=  ~(BITMASK_FLAG(mIndex))
-#define BITMASK_SET(mArray,mIndex)  (mArray)[BITMASK_OFFSET(mIndex)] \
-        |=  BITMASK_FLAG(mIndex)
-#define BITMASK_PRESENT(mArray,mIndex) ((mArray)[BITMASK_OFFSET(mIndex)] \
-        & BITMASK_FLAG(mIndex))
-#define BITMASK_ABSENT(mArray,mIndex) (((mArray)[BITMASK_OFFSET(mIndex)] \
-        & BITMASK_FLAG(mIndex)) == 0x0)
-#define BITMASK_PRESENT(mArray,mIndex) ((mArray)[BITMASK_OFFSET(mIndex)] \
-        & BITMASK_FLAG(mIndex))
-#define BITMASK_ABSENT(mArray,mIndex) (((mArray)[BITMASK_OFFSET(mIndex)] \
-        & BITMASK_FLAG(mIndex)) == 0x0)
+
+//BitMask Management logic for U32
+#define BITMASK_CLEAR_U32(mArray,mIndex) ((mArray) & (~(BITMASK_FLAG(mIndex))))
+#define BITMASK_SET_U32(mArray,mIndex)  ((mArray) | BITMASK_FLAG(mIndex))
+#define BITMASK_PRESENT_U32(mArray,mIndex) ((mArray) & BITMASK_FLAG(mIndex))
+#define BITMASK_ABSENT_U32(mArray,mIndex) (((mArray) & BITMASK_FLAG(mIndex)) == 0x0)
+
+
+
 #ifdef _ANDROID_ICS_
 #define MAX_NUM_INPUT_BUFFERS 32
 #endif

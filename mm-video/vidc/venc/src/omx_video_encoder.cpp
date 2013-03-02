@@ -8,7 +8,7 @@ modification, are permitted provided that the following conditions are met:
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * Neither the name of Code Aurora nor
+    * Neither the name of The Linux Foundation nor
       the names of its contributors may be used to endorse or promote
       products derived from this software without specific prior written
       permission.
@@ -800,7 +800,7 @@ OMX_ERRORTYPE  omx_venc::set_parameter(OMX_IN OMX_HANDLETYPE     hComp,
                   comp_role->cRole);
 
       if((m_state == OMX_StateLoaded)&&
-          !BITMASK_PRESENT(&m_flags,OMX_COMPONENT_IDLE_PENDING))
+          !BITMASK_PRESENT_U32(m_flags,OMX_COMPONENT_IDLE_PENDING))
       {
          DEBUG_PRINT_LOW("Set Parameter called in valid state");
       }

@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------
-Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
+Copyright (c) 2010-2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -8,7 +8,7 @@ modification, are permitted provided that the following conditions are met:
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * Neither the name of Code Aurora nor
+    * Neither the name of The Linux Foundation nor
       the names of its contributors may be used to endorse or promote
       products derived from this software without specific prior written
       permission.
@@ -43,6 +43,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <semaphore.h>
 #include "OMX_QCOMExtns.h"
 #include <sys/time.h>
+#include <cutils/properties.h>
 
 #include <linux/android_pmem.h>
 
@@ -588,7 +589,6 @@ void* ebd_thread(void* pArg)
       DEBUG_PRINT_ERROR("Error - No etb pBuffer to dequeue\n");
       continue;
     }
-
     pBuffer->nOffset = 0;
     if((readBytes = Read_Buffer(pBuffer)) > 0) {
         pBuffer->nFilledLen = readBytes;
@@ -619,9 +619,13 @@ void* fbd_thread(void* pArg)
   int canDisplay = 1, contigous_drop_frame = 0, bytes_written = 0, ret = 0;
   OMX_S64 base_timestamp = 0, lastTimestamp = 0;
   OMX_BUFFERHEADERTYPE *pBuffer = NULL, *pPrevBuff = NULL;
+  char value[PROPERTY_VALUE_MAX] = {0};
+  OMX_U32 aspectratio_prop = 0;
   pthread_mutex_lock(&eos_lock);
 
   DEBUG_PRINT("First Inside %s\n", __FUNCTION__);
+  property_get("vidc.vdec.debug.aspectratio", value, "0");
+  aspectratio_prop = atoi(value);
   while(currentStatus != ERROR_STATE && !bOutputEosReached)
   {
     pthread_mutex_unlock(&eos_lock);
@@ -765,9 +769,16 @@ void* fbd_thread(void* pArg)
               DEBUG_PRINT("OMX_ExtraDataFrameInfo: Buf(%p) TSmp(%lld) PicType(%u) IntT(%u) ConMB(%u)",
                 pBuffer->pBuffer, pBuffer->nTimeStamp, frame_info->ePicType,
                 frame_info->interlaceType, frame_info->nConcealedMacroblocks);
-              DEBUG_PRINT(" FrmRate(%u), AspRatioX(%u), AspRatioY(%u) ",
+              if (aspectratio_prop)
+                DEBUG_PRINT_ERROR(" FrmRate(%u), AspRatioX(%u), AspRatioY(%u) DispWidth(%u) DispHeight(%u)",
                 frame_info->nFrameRate, frame_info->aspectRatio.aspectRatioX,
-                frame_info->aspectRatio.aspectRatioY);
+                frame_info->aspectRatio.aspectRatioY, frame_info->displayAspectRatio.displayHorizontalSize,
+                frame_info->displayAspectRatio.displayVerticalSize);
+              else
+                DEBUG_PRINT(" FrmRate(%u), AspRatioX(%u), AspRatioY(%u) DispWidth(%u) DispHeight(%u)",
+                frame_info->nFrameRate, frame_info->aspectRatio.aspectRatioX,
+                frame_info->aspectRatio.aspectRatioY, frame_info->displayAspectRatio.displayHorizontalSize,
+                frame_info->displayAspectRatio.displayVerticalSize);
               DEBUG_PRINT("PANSCAN numWindows(%d)", frame_info->panScan.numWindows);
               for (int i = 0; i < frame_info->panScan.numWindows; i++)
               {
@@ -797,6 +808,32 @@ void* fbd_thread(void* pArg)
               }
               DEBUG_PRINT("OMX_ExtraDataConcealMB: Buf(%p) TSmp(%lld) ConcealMB(%u)",
                 pBuffer->pBuffer, pBuffer->nTimeStamp, concealMBnum);
+            }
+            break;
+            case OMX_ExtraDataMP2ExtnData:
+            {
+              DEBUG_PRINT("\nOMX_ExtraDataMP2ExtnData");
+              OMX_U8 data = 0, *data_ptr = (OMX_U8 *)pExtra->data;
+              OMX_U32 bytes_cnt = 0;
+              while (bytes_cnt < pExtra->nDataSize)
+              {
+                DEBUG_PRINT("\n MPEG-2 Extension Data Values[%d] = 0x%x", bytes_cnt, *data_ptr);
+                data_ptr++;
+                bytes_cnt++;
+              }
+            }
+            break;
+            case OMX_ExtraDataMP2UserData:
+            {
+              DEBUG_PRINT("\nOMX_ExtraDataMP2UserData");
+              OMX_U8 data = 0, *data_ptr = (OMX_U8 *)pExtra->data;
+              OMX_U32 bytes_cnt = 0;
+              while (bytes_cnt < pExtra->nDataSize)
+              {
+                DEBUG_PRINT("\n MPEG-2 User Data Values[%d] = 0x%x", bytes_cnt, *data_ptr);
+                data_ptr++;
+                bytes_cnt++;
+              }
             }
             break;
             default:
@@ -1853,6 +1890,11 @@ int Play_Decoder()
 #if 0
     extra_data.bEnable = OMX_FALSE;
     OMX_SetParameter(dec_handle,(OMX_INDEXTYPE)OMX_QcomIndexParamConcealMBMapExtraData,
+                     (OMX_PTR)&extra_data);
+#endif
+#if 0
+    extra_data.bEnable = OMX_TRUE;
+    OMX_SetParameter(dec_handle,(OMX_INDEXTYPE)OMX_QcomIndexEnableExtnUserData,
                      (OMX_PTR)&extra_data);
 #endif
     /* Query the decoder outport's min buf requirements */
@@ -3454,6 +3496,10 @@ int overlay_fb(struct OMX_BUFFERHEADERTYPE *pBufHdr)
             __LINE__);
         return -1;
     }
+    if (ioctl(fb_fd, FBIOPAN_DISPLAY, &vinfo) < 0) {
+        DEBUG_PRINT_ERROR("FBIOPAN_DISPLAY failed! line=%d\n", __LINE__);
+        return -1;
+    }
     DEBUG_PRINT("\nMSMFB_OVERLAY_PLAY successfull");
     return 0;
 }
@@ -3463,6 +3509,9 @@ void overlay_unset()
     if (ioctl(fb_fd, MSMFB_OVERLAY_UNSET, &vid_buf_front_id))
     {
         printf("\nERROR! MSMFB_OVERLAY_UNSET failed! (Line %d)\n", __LINE__);
+    }
+    if (ioctl(fb_fd, FBIOPAN_DISPLAY, &vinfo) < 0) {
+        DEBUG_PRINT_ERROR("FBIOPAN_DISPLAY failed! line=%d\n", __LINE__);
     }
 }
 
