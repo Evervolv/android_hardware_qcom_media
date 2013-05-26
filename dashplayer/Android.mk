@@ -45,7 +45,7 @@ LOCAL_C_INCLUDES := \
 
 LOCAL_MODULE:= libdashplayer
 
-LOCAL_MODULE_TAGS := eng
+LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_SHARED_LIBRARY)
 
