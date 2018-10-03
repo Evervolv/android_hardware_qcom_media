@@ -61,6 +61,8 @@ LOCAL_MODULE_TAGS               := optional
 LOCAL_CFLAGS                    := $(libmm-venc-def)
 LOCAL_C_INCLUDES                := $(libmm-venc-inc)
 
+LOCAL_HEADER_LIBRARIES    := generated_kernel_headers
+
 LOCAL_SHARED_LIBRARIES    := liblog libutils libbinder libcutils \
                              libc2dcolorconvert libdl
 
@@ -97,6 +99,9 @@ LOCAL_LICENSE_CONDITIONS        := notice
 LOCAL_MODULE_TAGS               := optional
 LOCAL_CFLAGS                    := $(libmm-venc-def)
 LOCAL_C_INCLUDES                := $(mm-venc-test720p-inc)
+
+LOCAL_HEADER_LIBRARIES          := generated_kernel_headers
+
 LOCAL_SHARED_LIBRARIES          := libmm-omxcore libOmxVenc libbinder
 
 LOCAL_SRC_FILES                 := venc/test/venc_test.cpp
@@ -121,6 +126,7 @@ LOCAL_MODULE_TAGS               := optional
 LOCAL_C_INCLUDES                := $(venc-test-inc)
 LOCAL_C_INCLUDES                += hardware/qcom/media/msm8974/mm-core/inc
 
+LOCAL_HEADER_LIBRARIES          := generated_kernel_headers
 
 LOCAL_SRC_FILES                 := venc/test/video_encoder_test.c
 LOCAL_SRC_FILES                 += venc/test/queue.c
